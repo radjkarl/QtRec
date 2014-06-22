@@ -27,14 +27,14 @@ class QtRecCore(object):
 							   #: False would only save the last one
 		self.log_file_name = 'saved.py' #: the name of the save file
 		self.restore = True		   #: should the last saved state restored when a new session is started?
-		self.write_mode = 'w'	   #: 'w'->write || 'a'->append ... to save file
+	#	self.write_mode = 'w'	   #: 'w'->write || 'a'->append ... to save file
 		
 		self.main_function = None   #: could be the <main> function if all started from a def main
 									 #: is None if all commands of the executed script are mounted
-									 #: in that module and not nexted in eg. a main function
+									 #: in that module and not nested in eg. a main function
 									 #: see the examples for the different possible methods
 		
-		self.print_class_not_found = True #: in case a module is imported from QtRec.QtGui that is not existant
+		self.print_class_not_found = True #: in case a module is imported from QtRec.QtGui that is not existent
 									 #: print a warning
 		
 		
@@ -49,6 +49,7 @@ class QtRecCore(object):
 		self._undone_methods = [] # a temp list filled at every undo event for corection of the log list / log positions
 
 
+
 	def log(self, param, method, *args):
 		if self._do_log and self._QApp_running:
 			#if self._QApp_running:
@@ -59,7 +60,7 @@ class QtRecCore(object):
 					self._log_positions[method].pop(index)
 			self._undone_methods = []
 			l = len(self._logList)
-			if self._overrideLast[method] and self._logList.method and self._logList.method[-1] == method:
+			if self._overrideLast.get(method) and self._logList.method and self._logList.method[-1] == method:
 				self._logList[-1] = ( param, method, args, time() )
 			else:
 				p = self._log_positions.get(method)
@@ -69,21 +70,19 @@ class QtRecCore(object):
 					self._log_positions[method] =  [l]
 				self._logList.append( ( param, method, args, time() ) )
 			self._logstep = len(self._logList) - 1
-			#else: #take this arg as init arg
-			#	print method,9999
-			#	if self._initArgs.get(method):
-			#		self._restoreArgs
-			#	self._initArgs[method] = args
 
 
 	def undo(self):
-		if self._logstep >= 0:
+		'''remove first tableCell has add. empty undo '''
+		if self._logstep >= 0:		
 			self._do_log = False
 
 			method = self._logList.method[self._logstep]
+
 			i = self._log_positions[method].index(self._logstep)
+			print method, i, self._log_positions[method], self._logstep
 			self._undone_methods.append((method, i))
-			if i <= 0: #param has not further log-positions: set it to init value
+			if i == 0: #param has not further log-positions: set it to init value
 				initargs = self._initArgs.get(method)
 				if initargs!=None:
 					self._execMethod(method, initargs)
@@ -92,37 +91,35 @@ class QtRecCore(object):
 				args = self._logList.args[prev_param_log]#TODO: ist nicht prev. sondern gleicher log
 				method = self._logList.method[prev_param_log]
 				self._execMethod(method, args)
-				
+
 			self._logstep -= 1
 			self._do_log = True
 
+
 	def _execMethod(self, method, args):
-		try:
-			method(*args)
-		except TypeError:#not multiple args
-			method(args)
+		#try:
+		method(*args)
+		#except TypeError:#not multiple args
+	#		method(args)
 
 	def redo(self):
+		'TODO: doesnt work as expected'
 		if self._logstep < len(self._logList):
 			self._do_log = False
 
 			method = self._logList.method[self._logstep]
 			i = self._log_positions[method].index(self._logstep)
-		#	self._undone_methods.append((method, i))
-			#if i <= 0: #param has not further log-positions: set it to init value
-				#initargs = self._initArgs.get(method)
-				#if initargs!=None:
-					#try:
-						#method(*initargs)
-					#except TypeError:#not multiple args
-						#method(initargs)
-			#else:
-			next_param_log = self._log_positions[method][i+1]
-			args = self._logList.args[next_param_log]#TODO: ist nicht prev. sondern gleicher log
-			method = self._logList.method[next_param_log]
-			self._execMethod(method, args)
+			if i != len(self._log_positions[method])-1:
+				try:
+					self._undone_methods.remove((method, i))
+				except ValueError:
+					pass
+				next_param_log = self._log_positions[method][i+1]
+				args = self._logList.args[next_param_log]#TODO: ist nicht prev. sondern gleicher log
+				method = self._logList.method[next_param_log]
+				self._execMethod(method, args)
 
-			self._logstep += 1
+				self._logstep += 1
 			self._do_log = True
 
 
@@ -135,16 +132,16 @@ class QtRecCore(object):
 		nameDict = {}
 		windowDict = {}
 	
-		writeHeader = not os.path.exists(logName) or self.write_mode == 'w'
-		with open(logName, self.write_mode) as logFile:
-			if writeHeader: #if new save file
-				logFile.write(
+		#writeHeader = not os.path.exists(logName) or self.write_mode == 'w'
+		with open(logName, 'w') as logFile:
+			#if writeHeader: #if new save file
+			logFile.write(
 '''#!/usr/bin/env python
 # -*- coding: utf-8 *-*
 
 # this file stores all method-calls though the preference-tabs
 # of the Gui. Though this procedure all entries of the are stores chonologically
-# This allous you to reload the whole case or to use is for following indiviual
+# This allows you to reload the whole case or to use is for following individual
 # problems even without using the Gui
 
 # The following calls were generated while using the Gui:''')
@@ -161,9 +158,11 @@ class QtRecCore(object):
 					importlist = importlist[0]
 				logFile.write('from __main__ import %s\n\n' %importlist )
 			else:
-				print 'WARNING: no loggable instances found in __main__ and __main__.main'
+				print 'WARNING: no log-able instances found in __main__ and __main__.main'
 			#for all logged methods:
 			for n,(param, method, value, time) in enumerate(self._logList):
+				if n == self._logstep:
+					break
 				last_log_pos = self._log_positions[method][-1]
 				if (self.save_history or not param.save_only_last_log or last_log_pos == n):##### not param.removed and
 					#do log:

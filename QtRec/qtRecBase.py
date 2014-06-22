@@ -50,9 +50,26 @@ class QtRecBase(object):
 			raise NameError('parent not given')
 
 
-	def addLogEvent(self, methodToLog, getArgsMethod=None, **kwargs):
+	def registerLogMethod(self, methodToLog, **kwargs):
+		QtRec.core._log_positions[methodToLog] = []
+		initArgs = kwargs.get('init')
+		if initArgs:
+			QtRec.core._initArgs[methodToLog] = initArgs
+		override = kwargs.get('override')	
+		if override:
+			QtRec.core._overrideLast[methodToLog] = override
+
+
+	#def createLogEvent2(self, method, signal):
+	#		signal.connect(method)
+	#		QtRec.core._log_signals[method] = signal
+
+
+
+	def createLogEvent(self, methodToLog, getArgsMethod=None, **kwargs):
+		#TODO: darauf hinweisen das das nur ne faule methode is
 		'''
-		add a class method here to log it everytime when called
+		add a class method here to log it everytime when called (implies registerLogMethod)
 		
 		getArgsMethod - function or list of functions to get the arguments for the methodToLog
 				can also be a list of strings containing arguments emmited by the signal
@@ -60,18 +77,22 @@ class QtRecBase(object):
 				e.q.	[ 'ARG1.size().width()','ARG2.size().height()' ]
 		override=True, default:False # whether each log event should override the last one
 		init=(one or multiple init values given to the methodToLog, can also be a callable
-		      to execute to return to the intitial state)
+		      to execute to return to the initial state)
 		'''
-		QtRec.core._log_positions[methodToLog] = []
-		QtRec.core._initArgs[methodToLog] = kwargs.get('init')
-		QtRec.core._overrideLast[methodToLog] = kwargs.get('override')
-
+		self.registerLogMethod(methodToLog, **kwargs)
 		if not getArgsMethod:
-			return lambda args: QtRec.core.log(self, methodToLog, args)
+			m = lambda args: QtRec.core.log(self, methodToLog, args) if QtRec.core._do_log else None
 		elif not getArgsMethod.__code__.co_argcount: # lambda that takes no arguments
-			return lambda evt: QtRec.core.log(self, methodToLog, *getArgsMethod() )
-		return lambda *evt: QtRec.core.log(self, methodToLog, *getArgsMethod(*evt) )
+			m = lambda evt: QtRec.core.log(self, methodToLog, *getArgsMethod() ) if QtRec.core._do_log else None
+		else:
+			m = lambda *evt: QtRec.core.log(self, methodToLog, *getArgsMethod(*evt) ) if QtRec.core._do_log else None
 
+# 		ev = kwargs.get('event')
+# 		if ev:
+# 			ev.connect(m)
+# 			QtRec.core._log_signals[methodToLog] = ev
+# 			QtRec.core._log_event_methods[methodToLog] = m
+		return m
 
 	def getLogChild(self, *names):
 		'''

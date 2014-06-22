@@ -59,7 +59,7 @@ class _LogButton(QtRecBase):
 	'''
 	def __init__(self,pclass, *args,**kwargs):
 		QtRecBase.__init__(self, pclass, *args,**kwargs)
-		self.logClicked = self.addLogEvent(self.click)
+		self.logClicked = self.createLogEvent(self.click)
 		self.clicked.connect(self.logClicked)
 		self.save_only_last_log = False #not usefull for buttons
 
@@ -75,7 +75,7 @@ class QLineEdit(origQtGui.QLineEdit, QtRecBase):
 	
 	def __init__(self, *args, **kwargs):
 		QtRecBase.__init__(self, origQtGui.QLineEdit, *args,**kwargs)
-		self.logTextChanged = self.addLogEvent(self.setText, init=self.text(), override=True)
+		self.logTextChanged = self.createLogEvent(self.setText, init=self.text(), override=True)
 		self.textChanged.connect(self.logTextChanged)
 
 
@@ -85,49 +85,42 @@ class QTableWidget(origQtGui.QTableWidget, QtRecBase):
 	def __init__(self, *args, **kwargs):
 		'''logs changing cell contents '''
 		QtRecBase.__init__(self, origQtGui.QTableWidget, *args,**kwargs)
-	#	self._init_state = {}
-	#	self._last_cell = (0,0)
-		self.logCellChanged = self.addLogEvent(
-			self.setCellText,
-			lambda row,col,
-			self=self: (row, col, self.item(row, col).text()),
-			#init=self._restoreInit
-			)
+		self._registered_cells = []
 		self.cellChanged.connect(self.logCellChanged)
-	#	self.cellChanged.connect(self._saveInitState)
 		self.save_only_last_log = False
 
 
+	def logCellChanged(self,row, col):
+		if QtRec.core._do_log:
+			s = '%s,%s' %(row, col)
+			print s, self._registered_cells
+			if s not in self._registered_cells:
+				# log the empty state to be able to undo the first entry
+				QtRec.core.log(self,self.setCellText, row, col, None)
+				self._registered_cells.append(s)
+		#	else:
+			text = self.item(row, col).text()
+			if text:
+				QtRec.core.log(self, self.setCellText, row, col, text )
+
+
 	def setCellText(self, row,col,text):
-		self._last_cell = (row,col)
-		item = self.item(row,col)
-		if not item:
-			item = origQtGui.QTableWidgetItem()
-			self.setItem(row,col,item)
-		item.setText(text)
+		if text == None:
+			self.takeItem(row, col)
+			try:
+				self._registered_cells.remove('%s,%s' %(row, col))
+			except ValueError:
+				pass
+		else:
+			item = self.item(row,col)
+			if not item:
+				# log the empty state to be able to undo the first entry
+			#	QtRec.core.log(self,self.takeItem,row, col)
+				item = origQtGui.QTableWidgetItem()
+				self.setItem(row,col,item)
+			item.setText(text)
 
 
-
-	#def _saveInitState(self, row,col):
-		#'''save the state of the table before user interaction'''
-		#if QtRec.core._QApp_running:
-			#self.cellChanged.disconnect(self._saveInitState)
-		#else:
-			#if not self._init_state.get(row):
-				#self._init_state[row] = {}
-			#self._init_state[row][col] = self.item(row, col).text()
-
-
-	#def _restoreInit(self):
-
-		#row, col = self._last_cell
-		#try:
-			#item = self.item(row, col)
-			#item.setText(self._init_state[row][col])
-		#except KeyError:
-			##reset
-			#item = origQtGui.QTableWidgetItem()
-			#self.setItem(row,col,item)
 
 
 
@@ -136,12 +129,12 @@ class _LogWindow(QtRecBase):
 	Logs all resize and move events.'''
 	def __init__(self, pClass, *args,**kwargs):
 		QtRecBase.__init__(self,pClass, *args,**kwargs)
-		self.resizeEvent = self.addLogEvent(
+		self.resizeEvent = self.createLogEvent(
 			self.setGeometry,
 			lambda: self.geometry().getRect(),
 			init=self.geometry().getRect(),
 			override=True )
-		self.moveEvent = self.addLogEvent(
+		self.moveEvent = self.createLogEvent(
 			self.move,
 			lambda evt: (evt.pos().x(),evt.pos().y()),
 			init=(self.pos().x(), self.pos().y()),
@@ -172,7 +165,7 @@ class QSlider(origQtGui.QSlider, QtRecBase):
 	Logs Slide movements'''
 	def __init__(self, *args,**kwargs):
 		QtRecBase.__init__(self, origQtGui.QSlider, *args,**kwargs)
-		self.logSliderMoved = self.addLogEvent(
+		self.logSliderMoved = self.createLogEvent(
 			self.setSliderPosition,
 			init=self.sliderPosition(),
 			override=True)

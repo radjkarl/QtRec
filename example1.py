@@ -28,6 +28,7 @@ class Example(QtGui.QWidget):
 
 		self.btn5 = QtGui.QPushButton('redo', self)
 		self.btn5.move(400, 250)
+		self.btn5.clicked.disconnect(self.btn5.logClicked)
 		self.btn5.clicked.connect(QtRec.core.redo)
 
 		self.resize(600,500)
@@ -37,7 +38,7 @@ class Example(QtGui.QWidget):
 
 QtRec.core.log_file_name = 'mySave1.py'
 QtRec.core.restore = True
-QtRec.core.write_mode = 'a'
+#QtRec.core.write_mode = 'a'
 
 app = QtGui.QApplication(sys.argv)
 win1 = Example()
