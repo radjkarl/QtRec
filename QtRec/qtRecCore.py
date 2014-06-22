@@ -4,7 +4,7 @@
 import __main__
 #import codecs
 from time import time, gmtime, strftime
-import os
+#import os
 #own
 from fancytools.fcollections import MultiList
 from fancytools.io import legalizeValues

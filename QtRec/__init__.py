@@ -32,4 +32,7 @@ __classifiers__ = [
 import sys
 if sys.modules['QtRec']:
 	from qtRecCore import QtRecCore
+	import uic
+	#from qtRecUic import QtRecUic
 	core = QtRecCore()
+	#uic = QtRecUic()
