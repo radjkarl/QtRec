@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
-QtRec = sys.modules['QtRec'] # get this module
+try:
+	QtRec = sys.modules['QtRec'] # get this module
+except KeyError:
+	import QtRec
+
 from fancytools.utils import incrementName
 
 class QtRecBase(object):

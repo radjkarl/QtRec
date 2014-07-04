@@ -7,7 +7,7 @@ from time import time, gmtime, strftime
 #import os
 #own
 from fancytools.fcollections import MultiList
-from fancytools.io import legalizeValues
+from fancytools.os import legalizeFilename
 
 #TODO: wie kann ich alle attribute besser dokumentieren - wenn sie hier irgendwo im quellcode liegen
 #entweder: #: - damit sollten die in spinx erscheiden
@@ -166,7 +166,7 @@ class QtRecCore(object):
 				last_log_pos = self._log_positions[method][-1]
 				if (self.save_history or not param.save_only_last_log or last_log_pos == n):##### not param.removed and
 					#do log:
-					value = legalizeValues(value)
+					value = legalizeFilename(value)
 					#format time-string if wanted
 					if self.save_time_stamp:
 						timeName = "time='%s'" %self._timeToStr(time)

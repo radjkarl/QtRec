@@ -26,13 +26,29 @@ __classifiers__ = [
 		'Topic :: Software Development :: Libraries :: Python Modules',
 		]
 
+
+
 # This module is also imported for installing the package
 # Load only the second part of the init if this package is installed and
 # all depencies are fulfilled
 import sys
-if sys.modules['QtRec']:
+QtRec = sys.modules.get('QtRec')
+if QtRec:
+
+	try:
+	    from PyQt4 import QtCore
+	except ImportError:
+	    try:
+	        from PySide import QtCore
+	    except ImportError:
+	        raise Exception("QtRec requires either PyQt4 or PySide; neither package could be imported.")
+
+	
 	from qtRecCore import QtRecCore
+	
 	import uic
+	#import QtGui
+	#import QtCore
 	#from qtRecUic import QtRecUic
-	core = QtRecCore()
+	QtRec.core = QtRecCore()
 	#uic = QtRecUic()

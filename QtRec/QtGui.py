@@ -10,6 +10,12 @@ but are also able to record certain events named as 'logEvents'
 import traceback
 import sys
 # get either PyQt or PySide depending on whats installed
+from fancytools.pystructure import FallBack
+
+#own
+from qtRecBase import QtRecBase
+QtRec = sys.modules['QtRec'] # get this module
+
 try:
 	from PyQt4 import QtGui as origQtGui
 except ImportError:
@@ -17,12 +23,6 @@ except ImportError:
 		from PySide import QtGui as origQtGui
 	except ImportError:
 		raise Exception("QtRec requires either PyQt4 or PySide; neither package could be imported.")
-
-from fancytools.pystructure import FallBack
-
-#own
-from qtRecBase import QtRecBase
-QtRec = sys.modules['QtRec'] # get this module
 
 
 
@@ -174,4 +174,4 @@ class QSlider(origQtGui.QSlider, QtRecBase):
 
 # if a called class is not existing in this module use the class of the
 # normal QtGui and print an error
-FallBack(__name__, origQtGui, QtRec.core.print_class_not_found)
+FallBack(__name__, origQtGui, lambda: getattr(QtRec.core,'print_class_not_found'))
