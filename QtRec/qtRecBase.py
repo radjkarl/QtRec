@@ -119,9 +119,10 @@ class QtRecBase(object):
 		path = []
 		while True: #the parent of the top-structure will be None
 			#determine arg-name of child in parent:
-			if parent._logparent:
+			try:
+			#if parent._logparent:
 				parent = parent._logparent
-			else:
+			except AttributeError:
 				parent = parent.parent()
 			if not parent:
 				break

@@ -93,15 +93,18 @@ class QTableWidget(origQtGui.QTableWidget, QtRecBase):
 	def logCellChanged(self,row, col):
 		if QtRec.core._do_log:
 			s = '%s,%s' %(row, col)
-			print s, self._registered_cells
+			#print s, self._registered_cells
 			if s not in self._registered_cells:
 				# log the empty state to be able to undo the first entry
 				QtRec.core.log(self,self.setCellText, row, col, None)
 				self._registered_cells.append(s)
 		#	else:
-			text = self.item(row, col).text()
-			if text:
-				QtRec.core.log(self, self.setCellText, row, col, text )
+			try:
+				text = self.item(row, col).text()
+			except AttributeError:
+				text = ''
+			#if text:
+			QtRec.core.log(self, self.setCellText, row, col, text )
 
 
 	def setCellText(self, row,col,text):
