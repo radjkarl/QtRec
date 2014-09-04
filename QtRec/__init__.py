@@ -43,9 +43,7 @@ if QtRec:
 	    except ImportError:
 	        raise Exception("QtRec requires either PyQt4 or PySide; neither package could be imported.")
 
-	
 	from qtRecCore import QtRecCore
-	
 	import uic
 	#import QtGui
 	#import QtCore

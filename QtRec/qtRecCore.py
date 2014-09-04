@@ -6,8 +6,10 @@ import __main__
 from time import time, gmtime, strftime
 #import os
 #own
-from fancytools.fcollections import MultiList
-from fancytools.os import legalizeFilename
+from fancytools.fcollections.MultiList import MultiList
+from fancytools.os.legalizeFilename import legalizeFilename
+
+
 
 #TODO: wie kann ich alle attribute besser dokumentieren - wenn sie hier irgendwo im quellcode liegen
 #entweder: #: - damit sollten die in spinx erscheiden
@@ -18,7 +20,8 @@ class QtRecCore(object):
 	Core functionality of QtRec including log, save, undo, redo
 	'''
 	def __init__(self):
-
+		#TODO: put all options in self.opts dict
+		
 		self.save_time_stamp = True #: write the time of each event in the save file
 		self.save_history = True    #: Activate this if you want to save the complete history
 							   #: and not just the current state

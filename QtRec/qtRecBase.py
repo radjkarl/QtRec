@@ -5,7 +5,7 @@ try:
 except KeyError:
 	import QtRec
 
-from fancytools.utils import incrementName
+from fancytools.utils.incrementName import incrementName
 
 class QtRecBase(object):
 	'''
@@ -31,7 +31,6 @@ class QtRecBase(object):
 			kwargs.pop('logparent')
 		# init base class here after all foreign contents from kwargs are removed
 		origQtGuiClass.__init__(self, *args, **kwargs)
-
 		if not p:
 			p = self.parent()
 		if p:

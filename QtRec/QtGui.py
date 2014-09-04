@@ -10,19 +10,21 @@ but are also able to record certain events named as 'logEvents'
 import traceback
 import sys
 # get either PyQt or PySide depending on whats installed
-from fancytools.pystructure import FallBack
+from fancytools.pystructure.FallBack import FallBack
 
 #own
 from qtRecBase import QtRecBase
 QtRec = sys.modules['QtRec'] # get this module
 
-try:
-	from PyQt4 import QtGui as origQtGui
-except ImportError:
-	try:
-		from PySide import QtGui as origQtGui
-	except ImportError:
-		raise Exception("QtRec requires either PyQt4 or PySide; neither package could be imported.")
+from PyQt4.QtGui import *
+from PyQt4 import QtGui as origQtGui
+# try:
+# 	from PyQt4 import QtGui as origQtGui
+# except ImportError:
+# 	try:
+# 		from PySide import QtGui as origQtGui
+# 	except ImportError:
+# 		raise Exception("QtRec requires either PyQt4 or PySide; neither package could be imported.")
 
 
 
@@ -119,7 +121,7 @@ class QTableWidget(origQtGui.QTableWidget, QtRecBase):
 			if not item:
 				# log the empty state to be able to undo the first entry
 			#	QtRec.core.log(self,self.takeItem,row, col)
-				item = origQtGui.QTableWidgetItem()
+				item = QTableWidgetItem()
 				self.setItem(row,col,item)
 			item.setText(text)
 
@@ -153,17 +155,19 @@ class QWidget(origQtGui.QWidget, _LogWindow):
 
 class QMainWindow(origQtGui.QMainWindow, _LogWindow):
 	def __init__(self, *args,**kwargs):
-		_LogWindow.__init__(self, origQtGui.QWidget, *args,**kwargs)
+		print 5
+		_LogWindow.__init__(self, origQtGui.QMainWindow, *args,**kwargs)
+		
 
 
 
-class QMenu(origQtGui.QMenu, QtRecBase):
+class QMenu(QMenu, QtRecBase):
 	def __init__(self, *args,**kwargs):
 		QtRecBase.__init__(self, origQtGui.QMenu, *args,**kwargs)
 
 
 
-class QSlider(origQtGui.QSlider, QtRecBase):
+class QSlider(QSlider, QtRecBase):
 	'''
 	Logs Slide movements'''
 	def __init__(self, *args,**kwargs):
@@ -177,4 +181,4 @@ class QSlider(origQtGui.QSlider, QtRecBase):
 
 # if a called class is not existing in this module use the class of the
 # normal QtGui and print an error
-FallBack(__name__, origQtGui, lambda: getattr(QtRec.core,'print_class_not_found'))
+#FallBack(__name__, origQtGui, lambda: getattr(QtRec.core,'print_class_not_found'))
